@@ -46,6 +46,8 @@
 #' (see \url{https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference/#costing-options}
 #' for more details about the options available for each costing model).
 #' @param server URL of the Valhalla server.
+#' @param request_options list of request options
+#' (see \url{https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference/#other-request-options}).
 #' @return
 #' The output of this function is an sf LINESTRING of the shortest route.\cr
 #' It contains 4 fields: \itemize{
@@ -83,7 +85,8 @@
 #' @export
 vl_route <- function(src, dst, loc,
                      costing = "auto", costing_options = list(),
-                     server = getOption("valh.server")) {
+                     server = getOption("valh.server"),
+                     request_options = list()) {
   # Handle input points
   if (missing(loc)) {
     # From src to dst
@@ -105,11 +108,23 @@ vl_route <- function(src, dst, loc,
     locs <- lapply(seq_along(loc$lon), function(i) list(lon = loc$lon[i], lat = loc$lat[i]))
   }
 
+  # Warn users if they provided something in request_options that we override
+  if (is.list(request_options) && length(request_options) > 0) {
+    if (any(names(request_options) %in% c("locations", "costing", "costing_options"))) {
+      warning(paste0(
+        "You provided some parameters in 'request_options' (among 'locations', 'costing' or 'costing_options')",
+        " that are overridden by the function arguments. Please remove these parameters",
+        " from 'request_options' to avoid confusion."
+      ), call. = FALSE)
+    }
+  }
+
   # Build the JSON argument of the request
-  json <- list(
+  json <- c(list(
     costing = costing,
     locations = locs
-  )
+  ), request_options)
+
   if (is.list(costing_options) && length(costing_options) > 0) {
     json$costing_options <- list()
     json$costing_options[[costing]] <- costing_options

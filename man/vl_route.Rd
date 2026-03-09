@@ -10,7 +10,8 @@ vl_route(
   loc,
   costing = "auto",
   costing_options = list(),
-  server = getOption("valh.server")
+  server = getOption("valh.server"),
+  request_options = list()
 )
 }
 \arguments{
@@ -57,6 +58,9 @@ If relevant, row names are used as identifiers.}
 for more details about the options available for each costing model).}
 
 \item{server}{URL of the Valhalla server.}
+
+\item{request_options}{list of request options
+(see \url{https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference/#other-request-options}).}
 }
 \value{
 The output of this function is an sf LINESTRING of the shortest route.\cr

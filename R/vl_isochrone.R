@@ -25,6 +25,8 @@
 #' (see \url{https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference/#costing-options}
 #' for more details about the options available for each costing model).
 #' @param server URL of the Valhalla server.
+#' @param request_options list of request options
+#' (see \url{https://valhalla.github.io/valhalla/api/isochrone/api-reference/#other-request-parameters}).
 #' @returns An sf MULTIPOLYGON object is returned with the following fields:
 #' 'metric' (the metric used, either 'time' or 'distance')
 #' and 'contour' (the value of the metric).
@@ -51,7 +53,8 @@
 #' @export
 vl_isochrone <- function(loc, times, distances,
                          costing = "auto", costing_options = list(),
-                         server = getOption("valh.server")) {
+                         server = getOption("valh.server"),
+                         request_options = list()) {
   # Handle input point(s)
   loc <- input_route(x = loc, single = TRUE, id = "loc")
   oprj <- loc$oprj
@@ -86,13 +89,33 @@ vl_isochrone <- function(loc, times, distances,
     stop("You must provide either 'times' or 'distances'.", call. = FALSE)
   }
 
+  # Warn users if they provided something in request_options that we override
+  if (is.list(request_options) && length(request_options) > 0) {
+    if ("costing" %in% names(request_options)) {
+      warning("The 'costing' parameter in 'request_options' will be ignored, as it is set by the 'costing' argument of the function.", call. = FALSE)
+    }
+    if ("costing_options" %in% names(request_options)) {
+      warning("The 'costing_options' parameter in 'request_options' will be ignored, as it is set by the 'costing_options' argument of the function.", call. = FALSE)
+    }
+    if ("locations" %in% names(request_options)) {
+      warning("The 'locations' parameter in 'request_options' will be ignored, as it is set by the 'loc' argument of the function.", call. = FALSE)
+    }
+    if ("polygons" %in% names(request_options)) {
+      warning("The 'polygons' parameter in 'request_options' will be ignored, as it is set to TRUE in the function.", call. = FALSE)
+    }
+    if ("contours" %in% names(request_options)) {
+      warning("The 'contours' parameter in 'request_options' will be ignored, as it is set by the 'times' or 'distances' argument of the function.", call. = FALSE)
+    }
+  }
+
   # Build the JSON argument of the request
-  json <- list(
+  json <- c(list(
     costing = costing,
     polygons = TRUE,
     contours = contours,
     locations = locs
-  )
+  ), request_options)
+
   if (is.list(costing_options) && length(costing_options) > 0) {
     json$costing_options <- list()
     json$costing_options[[costing]] <- costing_options

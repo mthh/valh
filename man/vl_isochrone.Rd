@@ -10,7 +10,8 @@ vl_isochrone(
   distances,
   costing = "auto",
   costing_options = list(),
-  server = getOption("valh.server")
+  server = getOption("valh.server"),
+  request_options = list()
 )
 }
 \arguments{
@@ -38,6 +39,9 @@ be greater than 0.}
 for more details about the options available for each costing model).}
 
 \item{server}{URL of the Valhalla server.}
+
+\item{request_options}{list of request options
+(see \url{https://valhalla.github.io/valhalla/api/isochrone/api-reference/#other-request-parameters}).}
 }
 \value{
 An sf MULTIPOLYGON object is returned with the following fields:

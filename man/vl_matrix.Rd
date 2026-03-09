@@ -10,7 +10,8 @@ vl_matrix(
   loc,
   costing = "auto",
   costing_options = list(),
-  server = getOption("valh.server")
+  server = getOption("valh.server"),
+  request_options = list()
 )
 }
 \arguments{
@@ -47,6 +48,9 @@ If relevant, row names are used as identifiers.}
 for more details about the options available for each costing model).}
 
 \item{server}{URL of the Valhalla server.}
+
+\item{request_options}{list of request options
+(see \url{https://valhalla.github.io/valhalla/api/matrix/api-reference/#other-request-options}).}
 }
 \value{
 The output of this function is a list composed of one or two matrices

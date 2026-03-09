@@ -35,6 +35,8 @@
 #' (see \url{https://valhalla.github.io/valhalla/api/turn-by-turn/api-reference/#costing-options}
 #' for more details about the options available for each costing model).
 #' @param server URL of the Valhalla server.
+#' @param request_options list of request options
+#' (see \url{https://valhalla.github.io/valhalla/api/matrix/api-reference/#other-request-options}).
 #' @return
 #' The output of this function is a list composed of one or two matrices
 #' and 2 data.frames
@@ -81,7 +83,8 @@
 #' @export
 vl_matrix <- function(src, dst, loc,
                       costing = "auto", costing_options = list(),
-                      server = getOption("valh.server")) {
+                      server = getOption("valh.server"),
+                      request_options = list()) {
   # Handle input points
   if (!missing(loc)) {
     dst_r <- src_r <- input_table(x = loc, id = "loc")
@@ -92,13 +95,25 @@ vl_matrix <- function(src, dst, loc,
   sources <- lapply(seq_along(src_r$lon), function(i) list(lon = src_r$lon[i], lat = src_r$lat[i]))
   targets <- lapply(seq_along(dst_r$lon), function(i) list(lon = dst_r$lon[i], lat = dst_r$lat[i]))
 
+  # Warn users if they provided something in request_options that we override
+  if (is.list(request_options) && length(request_options) > 0) {
+    if (any(names(request_options) %in% c("costing", "sources", "targets", "verbose"))) {
+      warning(paste0(
+        "You provided some parameters in 'request_options' (among 'costing', 'costing_options', 'sources', 'targets' or 'verbose')",
+        " that are overridden by the function arguments. ",
+        "Please provide these parameters directly as function arguments instead of in 'request_options'."
+      ), call. = FALSE)
+    }
+  }
+
   # Build the JSON argument of the request
-  json <- list(
+  json <- c(list(
     costing = costing,
     sources = sources,
     targets = targets,
     verbose = TRUE
-  )
+  ), request_options)
+
   if (is.list(costing_options) && length(costing_options) > 0) {
     json$costing_options <- list()
     json$costing_options[[costing]] <- costing_options
